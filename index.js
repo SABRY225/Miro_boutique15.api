@@ -18,8 +18,6 @@ const shopReviewRouter = require("./routes/shop/review-routes");
 
 const commonFeatureRouter = require("./routes/common/feature-routes");
 
-//create a database connection -> u can also
-//create a separate file for this and then import/use that file here
 
 mongoose
   .connect("mongodb+srv://e-commerce:8keZORsJaYEHd1dO@cluster0.8t9vg.mongodb.net/")
@@ -29,20 +27,22 @@ mongoose
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    methods: ["GET", "POST", "DELETE", "PUT"],
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization",
-      "Cache-Control",
-      "Expires",
-      "Pragma",
-    ],
-    credentials: true,
-  })
-);
+// app.use(
+//   cors({
+//     origin: "http://localhost:5173",
+//     methods: ["GET", "POST", "DELETE", "PUT"],
+//     allowedHeaders: [
+//       "Content-Type",
+//       "Authorization",
+//       "Cache-Control",
+//       "Expires",
+//       "Pragma",
+//     ],
+//     credentials: true,
+//   })
+// );
+app.use(cors());
+
 
 app.use(cookieParser());
 app.use(express.json());
