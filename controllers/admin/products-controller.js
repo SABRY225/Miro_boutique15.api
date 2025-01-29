@@ -21,7 +21,8 @@ const handleImageUpload = async (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp-relay.sendinblue.com",
+  port: 587,
   auth: {
     user: process.env.EMAIL_USER, // بريدك الإلكتروني
     pass: process.env.EMAIL_PASS, // كلمة المرور أو App Password من Gmail
