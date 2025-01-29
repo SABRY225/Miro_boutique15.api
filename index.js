@@ -2,53 +2,40 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-require('dotenv').config();
+require("dotenv").config();
 
 const authRouter = require("./routes/auth/auth-routes");
 const userRouter = require("./routes/admin/user-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
-
 const shopProductsRouter = require("./routes/shop/products-routes");
 const shopCartRouter = require("./routes/shop/cart-routes");
 const shopAddressRouter = require("./routes/shop/address-routes");
 const shopOrderRouter = require("./routes/shop/order-routes");
 const shopSearchRouter = require("./routes/shop/search-routes");
 const shopReviewRouter = require("./routes/shop/review-routes");
-
 const commonFeatureRouter = require("./routes/common/feature-routes");
 
-
-mongoose
-  .connect("mongodb+srv://e-commerce:8keZORsJaYEHd1dO@cluster0.8t9vg.mongodb.net/")
-  .then(() => console.log("MongoDB connected"))
-  .catch((error) => console.log(error));
-
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// app.use(
-//   cors({
-//     origin: "http://localhost:5173",
-//     methods: ["GET", "POST", "DELETE", "PUT"],
-//     allowedHeaders: [
-//       "Content-Type",
-//       "Authorization",
-//       "Cache-Control",
-//       "Expires",
-//       "Pragma",
-//     ],
-//     credentials: true,
-//   })
-// );
-app.use(cors());
-
+// إعداد CORS للسماح بالطلبات من أي مصدر
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "DELETE", "PUT"],
+    credentials: true,
+  })
+);
 
 app.use(cookieParser());
 app.use(express.json());
-app.use("/", ()=>{
-  console.log("server run")
+
+// نقطة فحص للتأكد من عمل السيرفر
+app.get("/", (req, res) => {
+  res.send("Server is running on Vercel 🚀");
 });
+
+// ربط المسارات
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
 app.use("/api/admin/products", adminProductsRouter);
@@ -61,4 +48,16 @@ app.use("/api/shop/search", shopSearchRouter);
 app.use("/api/shop/review", shopReviewRouter);
 app.use("/api/common/feature", commonFeatureRouter);
 
-app.listen(PORT, () => console.log(`Server is now running on port ${PORT}`));
+// الاتصال بـ MongoDB باستخدام متغير البيئة
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
+  console.error("❌ MONGO_URI is missing in environment variables");
+} else {
+  mongoose
+    .connect(MONGO_URI)
+    .then(() => console.log("✅ MongoDB connected successfully"))
+    .catch((error) => console.log("❌ MongoDB connection error:", error));
+}
+
+// تصدير التطبيق بدون `listen()`
+module.exports = app;
