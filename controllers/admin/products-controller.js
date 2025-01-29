@@ -1,6 +1,6 @@
 const { imageUploadUtil } = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
-
+const nodemailer = require("nodemailer");
 const handleImageUpload = async (req, res) => {
   try {
     const b64 = Buffer.from(req.file.buffer).toString("base64");
@@ -20,6 +20,13 @@ const handleImageUpload = async (req, res) => {
   }
 };
 
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: process.env.EMAIL_USER, // بريدك الإلكتروني
+    pass: process.env.EMAIL_PASS, // كلمة المرور أو App Password من Gmail
+  },
+});
 //add a new product
 const addProduct = async (req, res) => {
   try {
@@ -35,8 +42,7 @@ const addProduct = async (req, res) => {
       averageReview,
     } = req.body;
 
-    console.log(averageReview, "averageReview");
-
+    // إنشاء المنتج وحفظه في قاعدة البيانات
     const newlyCreatedProduct = new Product({
       image,
       title,
@@ -50,15 +56,37 @@ const addProduct = async (req, res) => {
     });
 
     await newlyCreatedProduct.save();
+
+    // جلب جميع المستخدمين المسجلين
+    const users = await User.find({}, "email"); // جلب الإيميلات فقط
+
+    // إرسال بريد إلكتروني لكل مستخدم
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: users.map((user) => user.email).join(","), // تحويل الإيميلات إلى قائمة
+      subject: "🚀 منتج جديد متاح الآن!",
+      html: `
+        <h2>منتج جديد تم إضافته إلى المتجر 🎉</h2>
+        <p><strong>الاسم:</strong> ${title}</p>
+        <p><strong>الوصف:</strong> ${description}</p>
+        <p><strong>السعر:</strong> ${price}$</p>
+        <img src="${image}" alt="صورة المنتج" width="200"/>
+        <p><a href="https://yourwebsite.com/products/${newlyCreatedProduct._id}">عرض المنتج</a></p>
+      `,
+    };
+
+    await transporter.sendMail(mailOptions);
+
     res.status(201).json({
       success: true,
+      message: "تم إضافة المنتج بنجاح، وتم إرسال الإيميلات للمستخدمين!",
       data: newlyCreatedProduct,
     });
   } catch (e) {
     console.log(e);
     res.status(500).json({
       success: false,
-      message: "Error occured",
+      message: "حدث خطأ أثناء إضافة المنتج أو إرسال الإيميلات.",
     });
   }
 };
