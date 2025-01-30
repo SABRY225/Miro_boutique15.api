@@ -7,19 +7,6 @@ const addProductReview = async (req, res) => {
     const { productId, userId, userName, reviewMessage, reviewValue } =
       req.body;
 
-    const order = await Order.findOne({
-      userId,
-      "cartItems.productId": productId,
-      // orderStatus: "confirmed" || "delivered",
-    });
-
-    if (!order) {
-      return res.status(403).json({
-        success: false,
-        message: "You need to purchase product to review it.",
-      });
-    }
-
     const checkExistinfReview = await ProductReview.findOne({
       productId,
       userId,
@@ -68,7 +55,7 @@ const getProductReviews = async (req, res) => {
   try {
     const { productId } = req.params;
 
-    const reviews = await ProductReview.find({ productId,isVerified:1 });
+    const reviews = await ProductReview.find({ productId, isVerified:1 });
     res.status(200).json({
       success: true,
       data: reviews,
@@ -101,26 +88,27 @@ const getProductsReviewsForAdmin = async (req, res) => {
 
 
 // تأكيد الريفيو
-exports.verifyReview = async (req, res) => {
+const verifyReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const updatedReview = await ProductReview.findByIdAndUpdate(
       reviewId,
       { isVerified: 1 },
       { new: true }
-    );
 
+    );
+   
     if (!updatedReview) {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    res.json({ message: "Review verified successfully", review: updatedReview });
+    res.status(200).json({ message: "Review verified successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
 
-exports.rejectReview = async (req, res) => {
+const rejectReview = async (req, res) => {
   try {
     const { reviewId } = req.params;
     const updatedReview = await ProductReview.findByIdAndUpdate(
@@ -133,31 +121,13 @@ exports.rejectReview = async (req, res) => {
       return res.status(404).json({ message: "Review not found" });
     }
 
-    res.json({ message: "Review rejected successfully", review: updatedReview });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error", error });
-  }
-};
-
-// رفض الريفيو
-exports.rejectReview = async (req, res) => {
-  try {
-    const { reviewId } = req.params;
-    const updatedReview = await ProductReview.findByIdAndUpdate(
-      reviewId,
-      { isVerified: 0 },
-      { new: true }
-    );
-
-    if (!updatedReview) {
-      return res.status(404).json({ message: "Review not found" });
-    }
-
-    res.json({ message: "Review rejected successfully", review: updatedReview });
+    res.status(200).json({ message: "Review rejected successfully"});
   } catch (error) {
     res.status(500).json({ message: "Internal server error", error });
   }
 };
 
 
-module.exports = { addProductReview, getProductReviews,getProductsReviewsForAdmin };
+
+
+module.exports = { verifyReview,rejectReview,addProductReview, getProductReviews,getProductsReviewsForAdmin };

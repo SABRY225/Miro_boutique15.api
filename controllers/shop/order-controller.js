@@ -27,12 +27,6 @@ const createOrder = async (req, res) => {
         message: "المبلغ الإجمالي غير صالح.",
       });
     }
-    if (!cartId) {
-      return res.status(400).json({
-        success: false,
-        message: "معرّف السلة مفقود.",
-      });
-    }
 
     // إنشاء الطلب
     const newlyCreatedOrder = new Order({
@@ -47,20 +41,23 @@ const createOrder = async (req, res) => {
     await newlyCreatedOrder.save();
 
     // حذف السلة
-    const cart = await Cart.findByIdAndDelete(cartId);
-    if (!cart) {
-      return res.status(404).json({
-        success: false,
-        message: "لم يتم العثور على السلة المرتبطة.",
+    if (cartId) {
+      const cart = await Cart.findById(cartId);
+      if (!cart) {
+        return res.status(404).json({
+          success: false,
+          message: "لم يتم العثور على السلة المرتبطة.",
+        });
+      }
+      await Cart.findByIdAndDelete(cartId);
+    }else{
+      res.status(200).json({
+        success: true,
+        message: "تم تأكيد الطلب بنجاح.",
+        orderId: newlyCreatedOrder._id,
       });
     }
 
-    // استجابة النجاح
-    res.status(200).json({
-      success: true,
-      message: "تم تأكيد الطلب بنجاح.",
-      orderId: newlyCreatedOrder._id,
-    });
   } catch (e) {
     console.error(e);
     res.status(500).json({
