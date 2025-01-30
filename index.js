@@ -6,6 +6,7 @@ require("dotenv").config();
 
 const authRouter = require("./routes/auth/auth-routes");
 const userRouter = require("./routes/admin/user-routes");
+const complaintsRouter=require("./routes/admin/complaints-routes");
 const adminProductsRouter = require("./routes/admin/products-routes");
 const adminOrderRouter = require("./routes/admin/order-routes");
 const shopProductsRouter = require("./routes/shop/products-routes");
@@ -37,6 +38,7 @@ app.get("/", (req, res) => {
 
 // ربط المسارات
 app.use("/api/auth", authRouter);
+app.use("/api/complaints", complaintsRouter);
 app.use("/api/user", userRouter);
 app.use("/api/admin/products", adminProductsRouter);
 app.use("/api/admin/orders", adminOrderRouter);
